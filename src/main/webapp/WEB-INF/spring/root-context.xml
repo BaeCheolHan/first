@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<context:component-scan base-package="com">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<!-- Postgresql dataSource -->
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp2.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName"
+			value="org.postgresql.Driver" />
+		<property name="url" value="jdbc:postgresql://localhost:5433/first" />
+		<property name="username" value="postgres" />
+		<property name="password" value="qwe123" />
+		<!-- 4개의 설정은 동일하게 설정하는 것이 예외 케이스를 줄일 수 있음 -->
+		<property name="initialSize" value="20" />
+		<property name="maxTotal" value="20" />
+		<property name="maxIdle" value="20" />
+		<property name="minIdle" value="20" />
+
+		<property name="defaultReadOnly" value="true" />
+		<!-- pool이 고갈되었을 경우 최대 대기 타임 ms -->
+		<property name="maxWaitMillis" value="3000" />
+		<!-- Evictor 설정 -->
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		<!-- testWhileIdle 설정. 150초마다 4개의 connection 꺼내 validation query를 날려 확인 -->
+		<property name="testWhileIdle" value="true" />
+
+		<property name="timeBetweenEvictionRunsMillis" value="150000" />
+		<property name="numTestsPerEvictionRun" value="4" />
+		<property name="minEvictableIdleTimeMillis" value="-1" />
+
+		<!-- preparedStatement 풀링 여부 -->
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxOpenPreparedStatements" value="50" />
+
+
+	</bean>
+
+
+
+	<!-- <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"> 
+		<property name="driverClassName" value="org.postgresql.Driver"/> <property 
+		name="url" value="//localhost:5433/first"/> <property name="username" value="postgres"/> 
+		<property name="password" value="qwe123"/> </bean> -->
+
+	<!-- MyBatis -->
+	<bean id="sqlSessionFactory"
+		class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation"
+			value="classpath:/mybatis/mybatis-config.xml"></property>
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="mapperLocations"
+			value="classpath:/mappers/*.xml"></property>
+		<property name="typeAliasesPackage" value="com.company.vo" />
+	</bean>
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.company.dao" />
+	</bean>
+
+</beans>
